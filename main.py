@@ -2,16 +2,20 @@ import funcs
 import classes
 import os
 #
-# if __name__ == '__main__':
-# if not os.path.exists('bus_company.pickle'):
-#     print('welcome bla bla bla')
-bus_company = classes.BestBusCompany()
-# else:
-#     with open('bus_company.pickle', 'rb') as fh:
-#         print('hello again...')
-#         bus_company = pickle.load(fh)
+if __name__ == '__main__':
+    if not os.path.exists('busrouts.pickle'):
+        print('welcome bla bla bla')
+        bus_company = classes.BestBusCompany()
+        classes.BestBusCompany.manager_passenger(bus_company)
+        funcs.save_object(bus_company.all_routs)
+    else:
+        print("hello again lala")
+        classes.BusRoute.all_routs = funcs.load_object('busrouts.pickle')
+        bus_company = classes.BestBusCompany()
+        classes.BestBusCompany.manager_passenger(bus_company)
+        funcs.save_object(bus_company.all_routs)
 
-classes.BestBusCompany.manager_passenger(bus_company)
+# PASSWORD FOR MANAGER IS ########################### " RideWithUs! " ###########################
 
-# with open('bus_company.pickle', 'wb') as fh:
-#     pickle.dump(bus_company, fh)
+#     classes.BestBusCompany.manager_passenger(bus_company)
+#     fh.write(classes.BestBusCompany().all_routs)

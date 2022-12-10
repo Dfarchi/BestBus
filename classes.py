@@ -110,7 +110,8 @@ class BestBusCompany:
             while line not in self.all_routs:
                 line = input('line num doesnt exist try another num - ')
             self.update_route(line)
-        # elif option == '4':
+        elif option == '4':
+            return False
         #     ScheduledRide.add_scheduled_ride()
 
     # general manging functions
@@ -121,6 +122,7 @@ class BestBusCompany:
         newroute = BusRoute(line, origin, destination)
         self.all_routs.append(newroute)
         return self.manager_menu()
+
     def delete_route(self, line):
         self.all_routs.remove(line)
         return self.manager_menu()
