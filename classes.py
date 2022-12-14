@@ -1,5 +1,3 @@
-import random
-
 
 class BusRoute:
 
@@ -7,20 +5,21 @@ class BusRoute:
         self.line = line
         self.origin = origin
         self.destination = destination
-        self.stops = []
+        self.stops = [self.origin, self.destination]
         self.scheduled_rides = []
 
     def __repr__(self):
-        return self.line
+        # return f'line number {self.line}, originates at {self.origin}'
+        return self.scheduled_rides
 
     def __str__(self):
-        print(self.line)
+        return self.line
 
 
 class ScheduledRide:
 
     def __init__(self, ride_id, startime, endtime, name):
-        self.id  = ride_id
+        self.id = ride_id
         self.origin_time = startime
         self.destination_time = endtime
         self.driver_name = name
@@ -30,15 +29,18 @@ class ScheduledRide:
         return self.id
 
     def __str__(self):
-        print(self.id)
+        return self.origin_time
+
 
 class BestBusCompany:
+
     # Stores and manages information about the whole company, including:
     # All the routes and schedules
     # All the actions defined earlier
 
     def __init__(self):
         self.rides_counter = 1
+        self.rout_nums = 1
         self.all_routs = []
 
     def manager_passenger(self):
@@ -49,6 +51,7 @@ class BestBusCompany:
             return self.manager_menu()
         elif choice == '2':
             return self.passenger_menu()
+
     # passenger functions---------------------------------------------------------------------------
     # add the RavKav option?
     def passenger_menu(self):
@@ -68,11 +71,11 @@ class BestBusCompany:
         start = input("from -")
         end = input("to -")
         when = input("when?")
-        options = []
+        possible_rides = []
         for route in self.all_routs:
             if start and end in route.stops:
-                options.append(route)
-        for route in options:
+                possible_rides.append(route)
+        for route in possible_rides:
             if when in route.scheduled_rides:
                 print(route, when)
 
@@ -85,7 +88,7 @@ class BestBusCompany:
         counter = 0
         while counter < 3:
             password = input('password =')
-            if password == 'RideWithUs!':
+            if password == '':   #RideWithUs!
                 return True
             else:
                 counter += 1
@@ -94,44 +97,69 @@ class BestBusCompany:
         return False
 
     def manager_menu(self):
-        print('manager menu')
+        print('manager menu \n 1 = add route \n 2 = delete route \n 3 = update route \n 4 = see all routs \n'
+              '5 = see all scheduled rides for a route\n'
+              '6 = add ride to route schedule(?) \n 0 = exit')
         option = input('what do you want to do?')
-        while not option.isnumeric() or not 0 < int(option) <= 4:
+        while not option.isnumeric() or not 0 <= int(option) <= 6:
             option = input('what do you want to do?')
         if option == '1':
             self.add_route()
         elif option == '2':
-            line = input('line num - ')
-            while line not in self.all_routs:
-                line = input('line num doesnt exist try another num - ')
-            self.delete_route(line)
+            route = self.all_routs[int(input('choose route'))-1]
+            while route not in self.all_routs:
+                route = self.all_routs[int(input('line num doesnt exist try another num , 0 to go back- '))]
+                if route == '0':
+                    return self.manager_menu()
+            self.delete_route(route)
         elif option == '3':
-            line = input('line num - ')
-            while line not in self.all_routs:
-                line = input('line num doesnt exist try another num - ')
-            self.update_route(line)
+            route = self.all_routs[int(input('line num - '))-1]
+            while route not in self.all_routs:
+                route = self.all_routs[int(input('line num doesnt exist try another num , 0 to go back- '))]
+                if route == '0':
+                    return self.manager_menu()
+            self.update_route(route)
         elif option == '4':
-            return False
+            print(self.all_routs)
+            return self.manager_menu()
+        elif option == '5':
+            route = self.all_routs[int(input('what route - '))-1]
+            print(f"route number {route.line} leaves {route.origin} at:")
+            for ride in route.scheduled_rides:
+                print(ride)
+            return self.manager_menu()
+        elif option == '6':
+            route = self.all_routs[int(input('choose route'))-1]
+            self.add_scheduled_ride(route)
+        elif option == '0':
+            pass
         #     ScheduledRide.add_scheduled_ride()
 
     # general manging functions
     def add_route(self):
-        line = input('line number -')
+        line = self.rout_nums
         origin = input('original stop -')
         destination = input('final destination -')
-        newroute = BusRoute(line, origin, destination)
+        newroute = BusRoute(str(line), origin, destination)
         self.all_routs.append(newroute)
+        self.rout_nums += 1
         return self.manager_menu()
 
-    def delete_route(self, line):
+    def delete_route(self, line: BusRoute):
         self.all_routs.remove(line)
         return self.manager_menu()
 
-
-    def update_route(self, line):
+    def update_route(self, line: BusRoute):
         while line not in self.all_routs:
             line = input("no such line try again -")
-        update = input(print('what do you want to update?'))
+        print('update menu:\n'
+              '1 - line number\n'
+              '2 origins\n'
+              '3 -finalle\n'
+              '4- stops\n'
+              '5 - rides\n'
+              '0 - back')
+        update = input('what do you want to update?')
         while not update.isdigit() or not 0 <= int(update) <= 5:
             update = input(print('what do you want to update?'))
         if update == '1':
@@ -147,9 +175,17 @@ class BestBusCompany:
                 line.stops.append(stop)
             elif add_remove == '2':
                 stop = input('which stop - ')
-                line.stops.romve(stop)
+                if stop in line.stops:
+                    line.stops.remove(stop)
+                else:
+                    print('no such route')
+                    return self.manager_menu()
         elif update == '5':
-            line.add_scheduled_ride()
+            add_remove = input("add - 1 or remove - 2")
+            if add_remove == '1':
+                self.add_scheduled_ride(line)
+            # elif add_remove == '2':
+
         elif update == '0':
             return self.manager_menu()
 
@@ -161,3 +197,6 @@ class BestBusCompany:
         self.rides_counter += 1
         route.scheduled_rides.append(newride)
         return self.manager_menu()
+
+
+
