@@ -1,5 +1,3 @@
-
-
 class Ride:
 
     def __init__(self, counter, origin_time, final_time, driver_name, hobby):
@@ -11,16 +9,13 @@ class Ride:
         self.drivers_hobby = hobby
         self.delays = 0
 
-    # def __repr__(self):
-    #     return f"Ride ID: {str(self.id)}\n" \
-    #            "Departure time: {self.origin_time}\n" \
-    #            f"Arrival time: {self.final_time}\n" \
-    #            f"Driver: {self.driver}, likes {self.drivers_hobby}\n" \
-    #            f"Delays: {self.delays}"
-    #
-    # def __str__(self):
-    #     return self.id
-    #
+    def __str__(self):
+        return f"Ride number: {self.id}\n" \
+               f"time of departure: {self.origin_time}\n" \
+               f"estimated time of arrival: {self.final_time}\n"
+
+    def __repr__(self):
+        return self.origin_time
 
 
 class Route:
@@ -32,18 +27,18 @@ class Route:
         self.stops = []
         self.rides = {}
 
-    def __repr__(self):
+    # def __repr__(self):
+
+    def __str__(self):
         return f"Line number: {self.line_num}\n" \
                f"Origin: {self.origin}\n" \
                f"Destination: {self.final}\n" \
                f"Stops: {self.stops}\n" \
                f"Scheduled rides: {self.rides}"
 
-    def __str__(self):
-        return self.line_num
 
-
-def is_manager():
+def is_manager() -> bool:
+    """checks manager password"""
     counter = 0
     while counter < 3:
         password = input('password =')
@@ -56,6 +51,16 @@ def is_manager():
     return False
 
 
+def get_ride(route: Route, ride: str) -> Ride:
+    """ Takes Route instance and a ride id, returns Ride instance  """
+    while ride not in route.rides:
+        print(f"route {route.line_num} rides id's:")
+        [print(route.rides[r].id) for r in route.rides]
+        ride = input("no ride with that id, try a new one -")
+    else:
+        return route.rides[ride]
+
+
 class BestBus:
 
     def __init__(self):
@@ -64,6 +69,7 @@ class BestBus:
         self.ride_counter = 1
 
     def manager_passenger(self):
+        """First function that user meets returns correct menu"""
         choice = input('log in as manager - 1 or passenger - 2')
         while not choice.isdigit() or int(choice) < 0 or int(choice) > 2:
             choice = input('log in as manager - 1 or passenger - 2')
@@ -73,6 +79,7 @@ class BestBus:
             return self.passenger_menu()
 
     def manager_menu(self):
+        """Manager menu, mainly validates inputs and call necessary functions"""
         print('manager menu \n'
               '1 = add route \n'
               '2 = delete route \n'
@@ -91,45 +98,54 @@ class BestBus:
                 self.add_route()
             elif option == '2':
                 del self.routs[str(self.get_route(input('line num - ')).line_num)]
-                # input=get_validated_input(input_type = driver_number, input)
+                self.rout_counter -= 1
             elif option == '3':
-                self.update_route(self.get_route(input('line num - ')))
+                route = self.get_route(input('Route num - '))
+                if route:
+                    self.update_route(route)
             elif option == '4':
-                self.add_ride(input('line num - '))
-            elif option == '5':
-                route = self.get_route(input('choose route'))
-                ride = self.get_ride(str(route.line_num), input('which ride ?'))
-                del route.rides[str(ride)]
-            elif option == '6':
-                route = self.get_route(input('choose route'))
-                ride = self.get_ride(str(route.line_num), input('which ride ?'))
-                self.update_ride(route, ride)
-            elif option == '7':
-                if len(self.routs) == 0:
-                    print('no routs yet, plz update system')
-                    pass
-                for route in self.routs.keys():
-                    print(f"route number {self.routs[route].line_num} leaves {self.routs[route].origin} and stops at:\n"
-                          f"{self.routs[route].stops} final stop - {self.routs[route].final}")
-            elif option == '8':
                 if len(self.routs) == 0:
                     print('no routs yet, plz update system')
                     pass
                 else:
-                    route = self.get_route(input('what route-'))
-                    if len(route.rides) == 0:
-                        print('no rides for this route yet, you can update new ones from the update menu')
-                        pass
-                    for r in route.rides.keys():
-                        ride = self.get_ride(str(route.line_num), r)
-                        print(
-                            f'line {route.line_num} ride id {ride.id} leaves {route.origin} at {ride.origin_time} arrives to {route.final} at {ride.final_time} \n '
-                            f'stops at {route.stops}'
-                            f'Driver {ride.driver} likes {ride.drivers_hobby}')
+                    route = self.get_route(input('line num - '))
+                    if route:
+                        self.add_ride(route)
+            elif option == '5':
+                if len(self.routs) == 0:
+                    print('no routs yet, plz update system')
+                    pass
+                route = self.get_route(input('choose route'))
+                if len(route.rides) == 0:
+                    print('no rides for this rout yet, plz update system')
+                    pass
+                else:
+                    ride = get_ride(route, input('ride id -'))
+                    del route.rides[str(ride.id)]
+                    self.ride_counter -= 1
+            elif option == '6':
+                if len(self.routs) == 0:
+                    print('no routs yet, plz update system')
+                    pass
+                route = self.get_route(input('choose route'))
+                if len(route.rides) == 0:
+                    print('no rides for this route yet, you can update new ones from the update menu')
+                    pass
+                else:
+                    ride = get_ride(route, input('ride id -'))
+                    self.update_ride(route, ride)
+            elif option == '7':
+                self.get_all_routes()
+                # if len(self.routs) == 0: print('no routs yet, plz update system') pass for route in
+                # self.routs.keys(): print(f"route number {self.routs[route].line_num} leaves {self.routs[
+                # route].origin} and stops at:\n" f"{self.routs[route].stops} final stop - {self.routs[route].final}")
+            elif option == '8':
+                self.get_all_rides()
             elif option == '0':
                 break
 
     def add_route(self):
+        """"creates new Route class instance"""
         new = Route(self.rout_counter,
                     input('origin of Route -'),
                     input('final stop - '))
@@ -137,6 +153,8 @@ class BestBus:
         self.rout_counter += 1
 
     def update_route(self, route: Route):
+        """update menu, redefines or edit specific Route class instances by attribute"""
+        print(route)
         print('update menu:\n'
               '1 - line number\n'
               '2 - origins\n'
@@ -147,17 +165,13 @@ class BestBus:
         while True:
             update = input('what do you want to update? 0 to go back')
             while not update.isdigit() or not 0 <= int(update) <= 5:
-                update = input(print('what do you want to update?'))
+                update = input('what do you want to update?')
             if update == '1':
-                self.routs[str(route.line_num)].line_num(int(input('new line number -')))
+                self.routs[str(route.line_num)].line_num = (int(input('new line number -')))
             elif update == '2':
-                # route.stops.remove(route.origin)
                 self.routs[str(route.line_num)].origin = input('new line origin -')
-                # route.stops.insert(0, route.origin)
             elif update == '3':
-                # route.stops.remove(route.final)
                 self.routs[str(route.line_num)].final = input('new line final stop -')
-                # route.stops.insert(-1, route.final)
             elif update == '4':
                 stop = input('new line stop - ')
                 route.stops.append(stop)
@@ -171,76 +185,153 @@ class BestBus:
                 return
 
     def get_route(self, route: str) -> Route or None:
-        return self.routs[route]
+        """gets Route id and returns Routs instance or None"""
+        if route in self.routs.keys():
+            return self.routs[route]
+        else:
+            print('cant find route')
 
-    def add_ride(self, route_num: str):
-        route = self.get_route(route_num)
-        new = Ride(self.ride_counter,
-                   input('time of departure -'),
-                   input('time of arrival - '),
-                   input('drivers name -'),
-                   input('drivers hobby -'))
+    def add_ride(self, route: Route):
+        """"creates new Ride class instance"""
+        departure = input('time of departure -')
+        for ride in route.rides.keys():
+            while route.rides[ride].origin_time == departure:
+                print('there is already a ride that departs at this hour time')
+                departure = input('time of departure -')
+        arrival = input('time of arrival - ')
+        name = input('drivers name -')
+        hobby = input('drivers hobby -')
+        new = Ride(self.ride_counter, departure, arrival, name, hobby)
         route.rides[str(self.ride_counter)] = new
         self.ride_counter += 1
 
-    def get_ride(self, route_num: str, ride: str) -> Ride:
-        return self.get_route(route_num).rides[ride]
-
     def update_ride(self, route: Route, ride: Ride):
-        print('1 - update startime\n'
-              '2 - update endtime \n'
+        """update menu, redefines specific Route class instances by attribute"""
+        print(ride)
+        ride_in_dict = self.routs[str(route.line_num)].rides[str(ride.id)]
+        # shortcut to update the DB instead of Ride.attribute which caused problems
+        print('1 - update star time\n'
+              '2 - update end time \n'
               '3 - update driver name \n'
-              '4 - updat drivers hobby \n'
+              '4 - update drivers hobby \n'
               '0 back')
         command = input('what do you want to do?')
         while not command.isnumeric() or not 0 <= int(command) <= 4:
             command = input('what do you want to do?')
         match command:
             case '1':
-                self.routs[str(route.line_num)].rides[str(ride.id)].origin_time = input('startime -')
+                ride_in_dict.origin_time = input('start time -')
         match command:
             case '2':
-                self.routs[str(route.line_num)].rides[str(ride.id)].final_time = input('endtime-')
+                ride_in_dict.final_time = input('end time-')
         match command:
             case '3':
-                self.routs[str(route.line_num)].rides[str(ride.id)].driver = input('drivers name -')
+                ride_in_dict.driver = input('drivers name -')
         match command:
             case '4':
-                self.routs[str(route.line_num)].rides[str(ride.id)].drivers_hobby = input('drivers hobby -')
+                ride_in_dict.drivers_hobby = input('drivers hobby -')
         match command:
             case '0':
                 return
 
-    def passenger_menu(self):
-        print('passenger menu:')
-        command = input('what do you want to do?')
-        while not command.isnumeric() or not 0 <= int(command) <= 4:
-            command = input('what do you want to do?')
-        match command:
-            case '1':
-                begin = str(input('from -'))
-                end = str(input('to - '))
-                when = int(input('when? -'))
-                searchlst =[]
-                for route in self.routs.keys():
-                    serachstoplst = self.routs[route].stops
-                    serachstoplst.append(self.routs[route].origin)
-                    serachstoplst.append(self.routs[route].final)
-                    if begin and end in serachstoplst:
-                        searchlst.append(route)
-                for route in searchlst:
-                    for ride in self.routs[route].rides:
-                        if when == int(self.routs[route].rides[ride].origin_time):
-                            print(f'route {route} leaves {begin} at {when}')
-            case '2':
-                route = self.get_route(str(input('what route?')))
-                ride = self.get_ride(route, str(input('what ride?')))
-                self.routs[str(route.line_num)].rides[str(ride.id)].delay += 1
-                print('Thank you for reporting this delay we are making every effort to crunch them down')
-            case '0':
+    def get_all_routes(self):
+        """prints all routs that the Bus company has"""
+        if len(self.routs) == 0:
+            print('no routs yet, plz update system')
+            pass
+        for route in self.routs.keys():
+            print(f"--------------------------------------------------------------------\n"
+                  f"route number {self.routs[route].line_num} leaves {self.routs[route].origin} and stops at:\n"
+                  f"{self.routs[route].stops} final stop - {self.routs[route].final}")
+            print(f"--------------------------------------------------------------------\n")
+
+    def get_all_rides(self):
+        """prints all rides for specific route"""
+        if len(self.routs) == 0:
+            print('no routs yet, plz update system')
+            pass
+        else:
+            route = self.get_route(input('what route-'))
+            if not route:
                 pass
+            elif len(route.rides) == 0:
+                print('no rides for this route yet, you can update new ones from the update menu')
+                pass
+            else:
+                for r in route.rides.keys():
+                    ride = get_ride(route, r)
+                    print(f'---------------------------------------------\n'
+                          f'line {route.line_num} ride id {ride.id} \n'
+                          f'leaves {route.origin} at {ride.origin_time}'
+                          f'arrives to {route.final} at {ride.final_time} \n '
+                          f'stops at {route.stops} \n '
+                          f'Driver -{ride.driver}, likes {ride.drivers_hobby}\n'
+                          f'{ride.delays} delays reported')
+                print(f"---------------------------------------------\n")
 
+    def passenger_menu(self):
+        """Passenger menu use as a search method or as a specific Ride attribute edit"""
+        while True:
+            print('passenger menu:\n'
+                  '1 - search for bus ride \n'
+                  '2 - report bus ride delay\n'
+                  '3 - see all bus routs \n'
+                  '4 - see all rides for route\n'
+                  '0 - exit')
+            command = input('what do you want to do?')
+            while not command.isnumeric() or not 0 <= int(command) <= 4:
+                command = input('what do you want to do?')
+            match command:
+                case '1':
+                    self.journey()
+                case '2':
+                    self.report_delay()
+                case '3':
+                    self.get_all_routes()
+                case '4':
+                    self.get_all_rides()
+                case '0':
+                    break
 
+    def journey(self):
+        """search function, user inputs start and end point.
+         prints all routs that goes through those stops at that hour"""
+        # problem 1 - it only checks for the rides time of departure because I haven't planned ahead enough in advance
+        # to add a BusStop class that would hold time of arrival to each stop per ride
+        # problem 2 - need to either add a ride.direction attribute or check that begin comes after end
+        begin = str(input('from -'))
+        end = str(input('to - '))
+        when = (input('when? HH format -'))
+        searchlst = []
+        for route in self.routs.keys():
+            serachstoplst = self.routs[route].stops.copy()
+            serachstoplst.insert(0, self.routs[route].origin)
+            serachstoplst.append(self.routs[route].final)
+            if begin and end in serachstoplst and serachstoplst.index(begin) < serachstoplst.index(end):
+                searchlst.append(route)
+        if len(searchlst) == 0:
+            print('seems we dont have any bus route through these stops')
+        else:
+            for route in searchlst:
+                noride = True
+                for ride in self.routs[route].rides:
+                    if int(when) == int(self.routs[route].rides[ride].origin_time):
+                        print(f'route {route} leaves {begin} at {when}')
+                        noride = False
+                    # add no rides for these hour message
+                if noride:
+                    print(f"sorry we have no viable rides from {begin} at {when} ")
 
-
-#
+    def report_delay(self):
+        route = self.get_route(str(input('what route?')))
+        if not route:
+            print("no such route")
+            pass
+        else:
+            if len(route.rides) == 0:
+                print("no such ride")
+                pass
+            ride = get_ride(route, str(input('ride id?')))
+            if ride:
+                self.routs[str(route.line_num)].rides[str(ride.id)].delays += 1
+                print('Thank you for reporting this delay we are making every effort to crunch them down')
